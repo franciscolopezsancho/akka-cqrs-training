@@ -53,8 +53,9 @@ class ProjectionSpec extends ScalaTestWithActorTestKit(ConfigFactory.load()) wit
         // add an optional first argument to specify the parallelism factor (Int)
         Slick.sink(id => insertEvent(id))
       )
-
+      
       Thread.sleep(3000)
+      assert(fail())
   }
 
    def insertEvent(event: String): DBIO[Int] =

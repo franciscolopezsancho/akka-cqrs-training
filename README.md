@@ -17,14 +17,35 @@ from the previous we assume tables have been created
 
 3. Let's now insert that in a DB. Let's add the projection in the init-table.sql
    we'll test that manually for now.
-      - for this we'll use a slick session
-      - and before run the test let's get into the docker mysql and run the creation from the projection
+      - for this we'll use a slick session and the result from the query in Step 2 as the Source to iterate over.
+         https://doc.akka.io/docs/alpakka/current/slick.html#using-a-slick-flow-or-sink
+      - and before run the test let's get into the docker mysql and run the creation ot the table `my-projection`
 
-4. let's automate the test now and refactor
+4. let's automate the test now and refactor. 
+      Will need three things. 
+
+      A. As tests on BoxSpec we'll need to create a persistence Entity and send an Item to it
+      B. As previous test in Projection Spec you'll need to read the journal and insert in db
+      
+      nothing new till here
+      C. Read from the my_projection table as a stream to verify we have what we expected. I recommend to print it first
+      https://doc.akka.io/docs/alpakka/current/slick.html#using-a-slick-source
+
+      D. Once we see how values come from the projection use `eventually { ... result should contain ("yada yada") ...}
+      You'll need mixint the test class `with Eventually` before begin able to add 
+      
+      Hints: be wary of the boxId you won't be able to insert it twice
+
+      but after all we'll have to create all tables in case of deploying the app. So ...
+      Let's first rerun mysql script to clean to clean everything and 
+
+5. Let's refactor
+   Take the creation from the projection out and put its own file
+   Create 
 
 4. also for cassandra?
 
-5. also for Kafka?
+5. also for Kafka?. 
 
 5. Let's write by tag
 

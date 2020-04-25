@@ -16,6 +16,8 @@ import akka.stream.scaladsl.Source
 import akka.persistence.query.EventEnvelope
 import akka.NotUsed
 import akka.stream.alpakka.slick.scaladsl.Slick
+import slick.dbio.DBIO
+import slick.jdbc.MySQLProfile.api._
 
 
 class ProjectionSpec extends ScalaTestWithActorTestKit(ConfigFactory.load()) with AnyWordSpecLike {
@@ -34,6 +36,32 @@ class ProjectionSpec extends ScalaTestWithActorTestKit(ConfigFactory.load()) wit
     }
   }
     
+  "A projection" should {
+    "be able to write to produce a new table" in  {
+      val query = PersistenceQuery(system)
+        .readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier)
+ 
+      val db = DatabaseConfig.forConfig[JdbcProfile](
+        "akka-persistence-jdbc.shared-databases.slick"
+      )
+      implicit val slickSession: SlickSession = SlickSession.forConfig(db)
+      
+      val source: Source[String, NotUsed] =
+        query.persistenceIds()
+
+      source.runWith(
+        // add an optional first argument to specify the parallelism factor (Int)
+        Slick.sink(id => insertEvent(id))
+      )
+
+      Thread.sleep(3000)
+  }
+
+   def insertEvent(event: String): DBIO[Int] =
+      sqlu"INSERT INTO my_projection VALUES($event)"
+
+    
+  }
   
 
   

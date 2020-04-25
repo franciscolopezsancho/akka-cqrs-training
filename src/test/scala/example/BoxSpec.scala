@@ -4,8 +4,18 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import org.scalatest.wordspec.AnyWordSpecLike
-import example.Box._
+import Box._
 import com.typesafe.config.ConfigFactory
+import akka.persistence.query.PersistenceQuery
+import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
+import akka.stream.alpakka.slick.scaladsl.SlickSession
+import akka.stream.scaladsl.Source
+import akka.persistence.query.EventEnvelope
+import akka.NotUsed
+import akka.stream.alpakka.slick.scaladsl.Slick
+
 
 class BoxSpec extends ScalaTestWithActorTestKit(ConfigFactory.load()) with AnyWordSpecLike {
 
@@ -36,4 +46,10 @@ class BoxSpec extends ScalaTestWithActorTestKit(ConfigFactory.load()) with AnyWo
       probe.expectMessage(Rejected(Item("foo",11),8))
     }
   }
+
+ 
+    
+  
+
+  
 }

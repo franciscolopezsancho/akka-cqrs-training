@@ -15,8 +15,11 @@ libraryDependencies ++= Seq(
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "2.0.0-RC2",
   "mysql" % "mysql-connector-java" % "8.0.19",
   "com.typesafe.akka" %% "akka-serialization-jackson" % "2.6.4",
+  "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "2.0.0-RC2",
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % "3.1.0" % Test
+  "org.scalatest" %% "scalatest" % "3.1.0" % Test,
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.4" % Test,
+
 )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.

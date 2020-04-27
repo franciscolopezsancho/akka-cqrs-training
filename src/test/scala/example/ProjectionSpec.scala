@@ -26,47 +26,33 @@ class ProjectionSpec
     extends ScalaTestWithActorTestKit(ConfigFactory.load())
     with AnyWordSpecLike {
 
-  def randomId = "box"+scala.util.Random.nextInt(Int.MaxValue)
 
-  "A projection" should {
-    "be able to write to produce a new table" in {
+  "The events from the Shopping Cart" should {
+    "be consumed by the event processor" in {
 
-      val boxId = randomId
+      val boxId = scala.util.Random.nextInt(Int.MaxValue).toString
 
-      val maxCapacity = 10
-      val cart = testKit.spawn(Box(boxId, maxCapacity))
-      val probe = testKit.createTestProbe[Confirmation]()
-      cart ! AddItem("bar", 1, probe.ref)
-      probe.expectMessage(Accepted(9))
+      DBHandler.createTables
 
-      val query = PersistenceQuery(system)
-        .readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier)
+      Projector.init("boxes", system)
 
-      val db = DatabaseConfig.forConfig[JdbcProfile](
-        "akka-persistence-jdbc.shared-databases.slick"
-      )
-      implicit val slickSession: SlickSession = SlickSession.forConfig(db)
+      val cart = testKit.spawn(Box(boxId,10))
+      val probe = testKit.createTestProbe[Box.Confirmation]
+      cart ! Box.AddItem("fooo", 2, probe.ref)
+      probe.expectMessage(Box.Accepted(roomLeft = 8))
 
-      val source: Source[String, NotUsed] =
-        query.persistenceIds()
+      implicit val session = DBHandler.slickSession
 
-      source.runWith(
-        // add an optional first argument to specify the parallelism factor (Int)
-        Slick.sink(id => insertEvent(id))
-      )
 
       eventually(PatienceConfiguration.Timeout(10.seconds)) {
         val future = Slick
-          .source(sql"select * from my_projection".as[String])
+          .source(sql"select * from projection".as[String])
           .runWith(Sink.seq)
-        val result = Await.result(future, 1.second)
-        println(s"#################### $result")
-        result should contain(s"Box|$boxId")
+          val result = Await.result(future,1.second)
+          result should contain(s"Box|$boxId")
       }
-    }
 
-    def insertEvent(event: String): DBIO[Int] =
-      sqlu"INSERT INTO my_projection VALUES($event)"
+    }
 
   }
 

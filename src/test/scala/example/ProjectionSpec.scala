@@ -34,7 +34,7 @@ class ProjectionSpec
 
       DBHandler.createTables
 
-      Projector.init("boxes", system)
+      Projector.init("box", system)
 
       val cart = testKit.spawn(Box(boxId,10))
       val probe = testKit.createTestProbe[Box.Confirmation]
@@ -49,7 +49,7 @@ class ProjectionSpec
           .source(sql"select * from projection".as[String])
           .runWith(Sink.seq)
           val result = Await.result(future,1.second)
-          result should contain(s"Box|$boxId")
+          result should contain(s"ItemAdded($boxId,fooo,2)")
       }
 
     }

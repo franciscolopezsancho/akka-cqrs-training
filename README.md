@@ -47,7 +47,8 @@ from the previous we assume tables have been created
 
 5. also for Kafka?. 
 
-5. Let's write by tag
+6. Let's write by tag
+      you may want to have a look at 
 
 6. Let's consume in parallel.
 

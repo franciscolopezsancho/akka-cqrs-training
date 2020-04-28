@@ -50,7 +50,7 @@ object Box {
       State.empty(maxCapacity),
       (state, command) => commandHandler(boxId, state, command),
       (state, event) => eventHandler(state, event)
-    )
+    ).withTagger(_ => Set("box-tag"))
   }
 
   def commandHandler(boxId: String, state: State, command: Command): Effect[Event, State] = {

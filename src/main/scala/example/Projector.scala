@@ -13,7 +13,7 @@ import slick.jdbc.MySQLProfile.api._
 
 object Projector {
 
-  def init(tag: String, system: ActorSystem[_]) = {
+  def init(system: ActorSystem[_]) = {
     val query = PersistenceQuery(system)
       .readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier)
 

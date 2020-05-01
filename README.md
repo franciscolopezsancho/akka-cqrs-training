@@ -49,6 +49,17 @@ from the previous we assume tables have been created
 
 6. Let's write by tag
       you may want to have a look at 
+      Tags are there for you to be able to work with multiple entities. When you query the journal you may filter this
+      way the entities you're processor is interested in. 
+
+6.1. Now let's make the tag be useful not only to filter one type of entities. Now multiple processors should be able to consume the same persistence entity but each processor will process only specifics id. We'll need to define a function to define the 'specifics' such as := def partitionTag(persistenceId: String): String = {"box-tag" concat (hash(id) mod num-consumers)}. i.e partitionTag("123") => "box-tag-0" . 
+
+    I would recommend first add this "num-consumers" as a hardcoded, 2 would be just fine.  Then test all this with two processors consuming each one one event. 
+
+    Then after test passes. Let's refactor and make the num-consumers and also "box-tag" string come from application.conf.
+
+    
+
 
 6. Let's consume in parallel.
 

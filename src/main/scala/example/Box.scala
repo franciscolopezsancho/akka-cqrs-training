@@ -44,6 +44,12 @@ object Box {
   case class Accepted(roomLeft: Int) extends Confirmation
   case class Rejected(item: Item, roomLeft: Int) extends Confirmation
 
+  def s: Function2[_,_,_] = ???
+
+  // def calculateTag(eventProcessorSettings: EventProcessorSettings, entityId: String): String = {
+    
+  // }
+
   def apply(boxId: String, maxCapacity: Int): Behavior[Command] = {
     EventSourcedBehavior[Command, Event, State](
       PersistenceId("Box", boxId),

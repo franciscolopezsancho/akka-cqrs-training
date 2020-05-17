@@ -15,7 +15,7 @@ import akka.persistence.query.EventEnvelope
 
 object Projector {
 
-  def init(tag: String, system: ActorSystem[_]) = {
+  def init(tag: String, system: ActorSystem[_], tableName: String) = {
     val query = PersistenceQuery(system)
       .readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier)
 
@@ -28,13 +28,13 @@ object Projector {
 
       
 
-    source.runWith(
+    source.log("################ yo").runWith(
       // add an optional first argument to specify the parallelism factor (Int)
-      Slick.sink(event => insertEvent(event.event.toString()))
+      Slick.sink(event => insertEvent(event.event.toString(), tableName))
     )
   }
 
-  def insertEvent(event: String): DBIO[Int] =
-    sqlu"INSERT INTO projection VALUES($event)"
+  def insertEvent(event: String, tableName: String): DBIO[Int] =
+    sqlu"INSERT INTO #$tableName VALUES($event)"
 
 }

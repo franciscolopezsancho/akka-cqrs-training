@@ -60,6 +60,8 @@ from the previous we assume tables have been created
 
     
 
+6.2 Now let's tag by event, and filter by that. 
+
 
 6. Let's consume in parallel.
 

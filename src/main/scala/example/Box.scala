@@ -18,6 +18,10 @@ object Box {
       this.copy(items = item +: items)
     }
     def roomLeft = maxCapacity - items.map(_.size).sum
+
+    def emptyBox: State = {
+      State.empty(maxCapacity)
+    }
   }
 
   object State {
@@ -32,23 +36,24 @@ object Box {
       size: Int,
       replyTo: ActorRef[Confirmation]
   ) extends Command
+  case class CleanBox(replyTo: ActorRef[Confirmation]) extends Command
+
 
   //EVENTS
   sealed trait Event extends CborSerializable {
     def boxId: String
   }
   case class ItemAdded(boxId: String, description: String, size: Int) extends Event
+  case class BoxCleaned(boxId: String) extends Event
 
   //REPLIES
   sealed trait Confirmation
   case class Accepted(roomLeft: Int) extends Confirmation
   case class Rejected(item: Item, roomLeft: Int) extends Confirmation
 
-  def s: Function2[_,_,_] = ???
-
-  // def calculateTag(eventProcessorSettings: EventProcessorSettings, entityId: String): String = {
-    
-  // }
+  def calculateTag(paralellism: Int, entityId: String): Int = {
+    entityId.toInt % paralellism
+  }
 
   def apply(boxId: String, maxCapacity: Int): Behavior[Command] = {
     EventSourcedBehavior[Command, Event, State](
@@ -56,7 +61,10 @@ object Box {
       State.empty(maxCapacity),
       (state, command) => commandHandler(boxId, state, command),
       (state, event) => eventHandler(state, event)
-    ).withTagger(_ => Set("box-tag"))
+    ).withTagger{
+      case event: BoxCleaned => Set("box-tag-" + calculateTag(2,boxId),"box-cleaned") // you may want just one or the other. 
+      case _ =>  Set("box-tag-" + calculateTag(2,boxId))
+     }
   }
 
   def commandHandler(boxId: String, state: State, command: Command): Effect[Event, State] = {
@@ -71,12 +79,20 @@ object Box {
           Effect.none
         }
       }
+      case CleanBox(replyTo) => {
+        Effect
+            .persist(BoxCleaned(boxId))
+            .thenRun(state => replyTo ! Accepted(state.roomLeft)) 
+      }
     }
   }
   def eventHandler(state: State, event: Event): State = {
     event match {
       case ItemAdded(boxId, description, size) => {
         state.addItem(Item(description, size))
+      }
+      case BoxCleaned(boxId) => {
+        state.emptyBox
       }
     }
   }

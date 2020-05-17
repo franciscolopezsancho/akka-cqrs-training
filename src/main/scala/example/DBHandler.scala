@@ -19,19 +19,21 @@ object DBHandler{
   )
   val slickSession: SlickSession = SlickSession.forConfig(db)
 
-  def createTables(): Unit = {
-    Await.ready(slickSession.db.run(dropTables), 30.seconds)
+  def createTables(projectionTables: List[String]): Unit = {
+    Await.ready(slickSession.db.run(dropTables(projectionTables)), 30.seconds)
     Await.ready(slickSession.db.run(createJournal), 30.seconds)
-    Await.ready(slickSession.db.run(createProjection), 30.seconds)
+    projectionTables.map{tableName => 
+      Await.ready(slickSession.db.run(createProjection(tableName)), 30.seconds)
+    }
     Await.ready(slickSession.db.run(createSnapshot), 30.seconds)
   }
 
-  def dropTables: DBIO[Int] = sqlu"""
-    DROP TABLE IF EXISTS journal, snapshot, projection;
+  def dropTables(projectionTableNames: List[String]): DBIO[Int] = sqlu"""
+    DROP TABLE IF EXISTS journal, snapshot, #${projectionTableNames.mkString(", ")};
     """
 
-  val createProjection: DBIO[Int] = sqlu"""
-    CREATE TABLE IF NOT EXISTS projection (
+  def createProjection(tableName: String): DBIO[Int] = sqlu"""
+    CREATE TABLE IF NOT EXISTS #$tableName (
         event VARCHAR(255) NOT NULL
     );
     """
